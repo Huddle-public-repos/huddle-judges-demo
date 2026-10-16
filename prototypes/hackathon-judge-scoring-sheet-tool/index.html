@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Judge Scoring Sheet</title>
+<style>
+  :root{--bg:#0f1220;--panel:#181c30;--panel2:#1f2440;--line:#2c3256;--text:#e8eaf6;--mute:#8e94b8;--accent:#7c8cff;--accent2:#43e0b0;--warn:#ffb85c}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(1200px 600px at 20% -10%,#222a5a 0,var(--bg) 60%);color:var(--text);min-height:100vh}
+  header{padding:20px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  h1{font-size:20px;margin:0}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--mute);font-size:13px}
+  main{display:grid;grid-template-columns:230px 1fr 260px;gap:18px;padding:0 28px 28px;max-width:1200px;margin:auto}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+  .team{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--text);padding:10px;border-radius:10px;cursor:pointer;font:inherit;margin-bottom:4px}
+  .team:hover{background:var(--panel2)}
+  .team.active{background:var(--panel2);border-color:var(--accent)}
+  .team small{display:block;color:var(--mute);font-size:11px;margin-top:2px}
+  .badge{font-size:12px;padding:3px 8px;border-radius:99px;background:#2a3058;color:var(--mute);white-space:nowrap}
+  .badge.done{background:rgba(67,224,176,.15);color:var(--accent2)}
+  .title{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px}
+  .title h3{margin:0;font-size:22px}
+  .pitch{color:var(--mute);font-size:14px;margin:0 0 18px}
+  .crit{padding:14px 0;border-top:1px solid var(--line)}
+  .crit-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .crit-head b{font-size:15px}
+  .crit-head .val{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+  .hint{color:var(--mute);font-size:12.5px;margin:3px 0 10px}
+  .scale{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+  .scale button{padding:9px 0;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer;font:inherit;font-size:13px}
+  .scale button:hover{border-color:var(--accent)}
+  .scale button.on{background:var(--accent);border-color:var(--accent);color:#0b0e20;font-weight:700}
+  .scale button.fill{background:rgba(124,140,255,.25)}
+  .anchors{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:4px}
+  textarea{width:100%;min-height:64px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px;font:inherit;font-size:13px;resize:vertical}
+  .total{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,#252c5c,#1c2145);border:1px solid var(--line)}
+  .total .big{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums}
+  .total .big small{font-size:16px;color:var(--mute);font-weight:500}
+  .bar{height:8px;border-radius:99px;background:var(--panel2);overflow:hidden;margin-top:6px;width:160px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s}
+  .actions{display:flex;gap:8px;margin-top:12px}
+  .btn{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer;font:inherit;font-size:13px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#0b0e20;font-weight:700}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .lb-row:last-child{border:0}
+  .rank{width:22px;height:22px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-size:11px;color:var(--mute)}
+  .lb-row:first-child .rank{background:var(--warn);color:#2a1a00;font-weight:700}
+  .lb-row .nm{flex:1}
+  .lb-row .sc{font-variant-numeric:tabular-nums;font-weight:700}
+  .note{font-size:11.5px;color:var(--mute);margin-top:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Judge <span>Scoring Sheet</span></h1>
+    <div class="sub">Rate each demo on 3 criteria · 1–10 each · total out of 30</div>
+  </div>
+  <div class="sub" id="progress"></div>
+</header>
+<main>
+  <section class="card">
+    <h2>Teams</h2>
+    <div id="teams"></div>
+  </section>
+
+  <section class="card">
+    <div class="title">
+      <h3 id="tname"></h3>
+      <span class="badge" id="tstatus"></span>
+    </div>
+    <p class="pitch" id="tpitch"></p>
+    <div id="crits"></div>
+    <div style="border-top:1px solid var(--line);padding-top:14px">
+      <h2>Judge notes</h2>
+      <textarea id="notes" placeholder="Optional feedback for this team…"></textarea>
+    </div>
+    <div class="total">
+      <div>
+        <div class="sub">Total score</div>
+        <div class="bar"><i id="bar"></i></div>
+      </div>
+      <div class="big"><span id="total">0</span><small> / 30</small></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="next">Save &amp; next team →</button>
+      <button class="btn" id="clear">Clear scores</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Your leaderboard</h2>
+    <div id="lb"></div>
+    <div class="note">Criteria reflect the common hackathon rubric pattern (innovation, technical execution, impact). Equal weighting; adjust to your event's rules. Scores live only in this page.</div>
+  </section>
+</main>
+
+<script>
+const CRITERIA = [
+  {key:'innovation', label:'Innovation & Creativity', hint:'Is the idea original, or a fresh take on a known problem?', lo:'Familiar', hi:'Novel'},
+  {key:'technical',  label:'Technical Execution',     hint:'Does the demo actually work? Quality and difficulty of the build.', lo:'Mockup only', hi:'Polished & working'},
+  {key:'impact',     label:'Impact & Usefulness',     hint:'Real problem, clear user, and a believable path to value.', lo:'Unclear need', hi:'Clear, valuable'}
+];
+const TEAMS = [
+  {name:'Team Greenlight', pitch:'Routes delivery vans through low-emission zones in real time.'},
+  {name:'PatchPal',        pitch:'AI assistant that triages open-source bug reports and drafts fixes.'},
+  {name:'CareLoop',        pitch:'Post-discharge check-ins for patients via SMS and voice.'},
+  {name:'Budgetly Kids',   pitch:'Gamified money lessons for ages 8–12, tied to a parent dashboard.'},
+  {name:'SignBridge',      pitch:'Live sign-language captioning in video calls using on-device vision.'}
+];
+// state kept in memory only
+const state = TEAMS.map(()=>({scores:{innovation:0,technical:0,impact:0},notes:''}));
+let cur = 0;
+const $ = id => document.getElementById(id);
+const sum = s => CRITERIA.reduce((a,c)=>a+s.scores[c.key],0);
+const complete = s => CRITERIA.every(c=>s.scores[c.key]>0);
+
+function renderTeams(){
+  $('teams').innerHTML = TEAMS.map((t,i)=>{
+    const s = state[i];
+    return `<button class="team ${i===cur?'active':''}" data-i="${i}">
+      <span>${t.name}<small>${complete(s)?'Scored':'Not scored'}</small></span>
+      <span class="badge ${complete(s)?'done':''}">${complete(s)?sum(s):'–'}</span></button>`;
+  }).join('');
+  const done = state.filter(complete).length;
+  $('progress').textContent = `${done} of ${TEAMS.length} teams scored`;
+}
+function renderSheet(){
+  const t = TEAMS[cur], s = state[cur];
+  $('tname').textContent = t.name;
+  $('tpitch').textContent = t.pitch;
+  $('notes').value = s.notes;
+  $('crits').innerHTML = CRITERIA.map(c=>{
+    const v = s.scores[c.key];
+    let btns = '';
+    for(let n=1;n<=10;n++) btns += `<button data-k="${c.key}" data-n="${n}" class="${n===v?'on':(n<v?'fill':'')}">${n}</button>`;
+    return `<div class="crit">
+      <div class="crit-head"><b>${c.label}</b><span class="val">${v||'–'} / 10</span></div>
+      <div class="hint">${c.hint}</div>
+      <div class="scale">${btns}</div>
+      <div class="anchors"><span>1 · ${c.lo}</span><span>10 · ${c.hi}</span></div>
+    </div>`;
+  }).join('');
+  updateTotal();
+}
+function updateTotal(){
+  const s = state[cur], t = sum(s);
+  $('total').textContent = t;
+  $('bar').style.width = (t/30*100)+'%';
+  const ok = complete(s);
+  $('tstatus').textContent = ok ? 'Complete' : `${CRITERIA.filter(c=>s.scores[c.key]>0).length}/3 rated`;
+  $('tstatus').className = 'badge'+(ok?' done':'');
+  renderTeams(); renderLB();
+}
+function renderLB(){
+  const rows = TEAMS.map((t,i)=>({n:t.name,s:sum(state[i]),ok:complete(state[i])})).filter(r=>r.ok).sort((a,b)=>b.s-a.s);
+  $('lb').innerHTML = rows.length ? rows.map((r,i)=>`<div class="lb-row"><span class="rank">${i+1}</span><span class="nm">${r.n}</span><span class="sc">${r.s}</span></div>`).join('')
+    : '<div class="sub">Complete a team\'s three ratings to rank it here.</div>';
+}
+$('teams').addEventListener('click',e=>{
+  const b = e.target.closest('.team'); if(!b) return;
+  cur = +b.dataset.i; renderSheet();
+});
+$('crits').addEventListener('click',e=>{
+  const b = e.target.closest('button[data-k]'); if(!b) return;
+  const s = state[cur], k = b.dataset.k, n = +b.dataset.n;
+  s.scores[k] = s.scores[k]===n ? 0 : n;
+  renderSheet();
+});
+$('notes').addEventListener('input',e=>{ state[cur].notes = e.target.value; });
+$('clear').onclick = ()=>{ state[cur] = {scores:{innovation:0,technical:0,impact:0},notes:''}; renderSheet(); };
+$('next').onclick = ()=>{ cur = (cur+1)%TEAMS.length; renderSheet(); };
+renderSheet();
+</script>
+</body>
+</html>
